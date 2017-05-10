@@ -1,3 +1,4 @@
+import os
 import bcrypt
 from eve import Eve
 from eve.auth import BasicAuth
@@ -7,6 +8,18 @@ from datetime import timedelta
 from flask import make_response, request, current_app, jsonify
 from functools import update_wrapper
 
+
+# Heroku support: bind to PORT if defined, otherwise default to 5000.
+if 'PORT' in os.environ:
+    port = int(os.environ.get('PORT'))
+    # use '0.0.0.0' to ensure your REST API is reachable from all your
+    # network (and not only your computer).
+    host = '0.0.0.0'
+else:
+    port = 5000
+    host = '127.0.0.1'
+
+    
 # snippet for flask crossdomain
 def crossdomain(origin=None, methods=None, headers=None, max_age=21600, attach_to_all=True, automatic_options=True):
     if methods is not None:
@@ -92,4 +105,4 @@ app.on_insert_users += create_user
 
 
 if __name__ == '__main__':
-    app.run(threaded=True,host="0.0.0.0",port=int("5000"))
+    app.run(threaded=True,host=host, port=port)
