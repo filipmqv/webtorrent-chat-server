@@ -4,9 +4,9 @@ import os
 # Heroku, sensible DB connection settings are stored in environment variables.
 MONGO_HOST = os.environ.get('MONGO_HOST', 'localhost')
 MONGO_PORT = os.environ.get('MONGO_PORT', 27017)
-MONGO_USERNAME = os.environ.get('MONGO_USERNAME', 'user')
-MONGO_PASSWORD = os.environ.get('MONGO_PASSWORD', 'user')
-MONGO_DBNAME = os.environ.get('MONGO_DBNAME', 'evedemo')
+MONGO_USERNAME = os.environ.get('MONGO_USERNAME', '')
+MONGO_PASSWORD = os.environ.get('MONGO_PASSWORD', '')
+MONGO_DBNAME = os.environ.get('MONGO_DBNAME', 'eve')
 
 RESOURCE_METHODS = ['GET', 'POST'] # dla calej kolekcji
 
@@ -23,6 +23,23 @@ IF_MATCH = False # TODO
 #MONGO_USERNAME = '<your username>'
 #MONGO_PASSWORD = '<your password>'
 
+users_schema = {
+    'username': {
+        'type': 'string',
+        'required': True,
+        'unique': True
+    },
+    'email': {
+        'type': 'string',
+        'required': True,
+        'unique': True
+    },
+    'password': {
+        'type': 'string',
+        'required': True
+    }    
+}
+
 users = {
     'item_title': 'user',
     'additional_lookup': {
@@ -30,29 +47,60 @@ users = {
         'field': 'username',
     },
     'datasource': {
-        'projection': {'password': 0}
+        'projection': {'password': 0, 'salt': 0}
     },
     'public_methods': ['POST'],
-    'schema': {
-        'username': {
-            'type': 'string',
-            'required': True,
-            'unique': True
-        },
-        'email': {
-            'type': 'string',
-            'required': True,
-            'unique': True
-        },
-        'password': {
-            'type': 'string',
-            'required': True
-        },
-        'dht_id': {
-            'type': 'string'
-        }        
+    'schema': users_schema
+}
+
+
+
+friends_schema = {
+    'friend1': {
+        'type': 'string',
+        'required': True
+    },
+    'friend2': {
+        'type': 'string',
+        'required': True
     }
 }
+
+friends = {
+    'item_title': 'friend',
+    'pagination': False,
+    'schema': friends_schema
+}
+
+
+
+conversation_schema = {
+    'conversation_id': {
+        'type': 'string',
+        'required': True
+    },
+    'user_id': {
+        'type': 'objectid',
+        'data_relation': {
+             'resource': 'users',
+             'field': '_id',
+             'embeddable': True
+        },
+        'required': True
+    },
+    'user_dht_id': {
+        'type': 'string',
+        'required': True
+    }
+}
+
+conversations = {
+    'item_title': 'conversation',
+    'pagination': False,
+    'schema': conversation_schema
+}
+
+
 
 dht_schema = {
     'infohash': {
@@ -68,7 +116,11 @@ dht = {
     'authentication': None
 }
 
+
+
 DOMAIN = {
     'dht': dht,
-    'users': users
+    'users': users,
+    'friends': friends,
+    'conversations': conversations
 }

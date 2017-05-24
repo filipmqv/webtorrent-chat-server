@@ -8,6 +8,7 @@ from datetime import timedelta
 from flask import make_response, request, current_app, jsonify
 from functools import update_wrapper
 
+import uuid
 
 # Heroku support: bind to PORT if defined, otherwise default to 5000.
 if 'PORT' in os.environ:
@@ -17,9 +18,8 @@ if 'PORT' in os.environ:
     host = '0.0.0.0'
 else:
     port = 5000
-    host = '127.0.0.1'
+    host = '0.0.0.0'
 
-    
 # snippet for flask crossdomain
 def crossdomain(origin=None, methods=None, headers=None, max_age=21600, attach_to_all=True, automatic_options=True):
     if methods is not None:
@@ -100,9 +100,15 @@ def create_user(documents):
         document['password'] = bcrypt.hashpw(password, document['salt'])
         document['role'] = 'user'
 
-app.on_insert_users += create_user
+def check_conversation_id(documents):
+    for document in documents:
+        if document['conversation_id'] == 'dummy':
+            document['conversation_id'] = str(uuid.uuid4())
 
+
+app.on_insert_users += create_user
+app.on_insert_conversations += check_conversation_id
 
 
 if __name__ == '__main__':
-    app.run(threaded=True,host=host, port=port)
+    app.run(threaded=True,host=host,port=port)
